@@ -18,6 +18,45 @@ license(
 
 exports_files(["COPYING"])
 
+config_setting(
+    name = "windows_aarch64",
+    constraint_values = [
+        "@platforms//cpu:aarch64",
+        "@platforms//os:windows",
+    ],
+)
+
+config_setting(
+    name = "windows_x86_64",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:windows",
+    ],
+)
+
+cc_library(
+    name = "pixman_asm_aarch64",
+    srcs = [
+        "pixman/pixman-arma64-neon-asm.S",
+        "pixman/pixman-arma64-neon-asm-bilinear.S",
+    ],
+    hdrs = [
+        "pixman/pixman-arm-asm.h",
+        "pixman/pixman-arm-common.h",
+        "pixman/pixman-arma64-neon-asm.h",
+    ],
+    copts = [
+        "-DHAVE_CONFIG_H",
+        "-D__ASSEMBLER__",
+        "-DPIXMAN_API=__declspec(dllimport)",
+    ],
+    includes = [
+        "os/windows_arm64/pixman",
+        "pixman",
+    ],
+    visibility = ["//visibility:private"],
+)
+
 cc_library(
     name = "pixman_simd",
     srcs = [
@@ -31,10 +70,15 @@ cc_library(
                 "pixman/pixman-sse2.c",
                 "pixman/pixman-ssse3.c",
             ],
-            "@platforms//os:windows": [
+            ":windows_x86_64": [
                 "pixman/pixman-mmx.c",
                 "pixman/pixman-sse2.c",
                 "pixman/pixman-ssse3.c",
+            ],
+            ":windows_aarch64": [
+                "pixman/pixman-arm-asm.h",
+                "pixman/pixman-arm-common.h",
+                "pixman/pixman-arm-neon.c",
             ],
             "@platforms//os:macos": [
                 "pixman/pixman-arm-asm.h",
@@ -56,9 +100,13 @@ cc_library(
                 "os/linux/pixman/pixman-config.h",
                 "os/linux/pixman/pixman-version.h",
             ],
-            "@platforms//os:windows": [
+            ":windows_x86_64": [
                 "os/windows/pixman/pixman-config.h",
                 "os/windows/pixman/pixman-version.h",
+            ],
+            ":windows_aarch64": [
+                "os/windows_arm64/pixman/pixman-config.h",
+                "os/windows_arm64/pixman/pixman-version.h",
             ],
             "@platforms//os:macos": [
                 "os/darwin/pixman/pixman-config.h",
@@ -75,8 +123,11 @@ cc_library(
                 "-mssse3",
                 "-Wno-macro-redefined",
             ],
-            "@platforms//os:windows": [
+            ":windows_x86_64": [
                 "-mssse3",
+                "-DPIXMAN_API=__declspec(dllexport)",
+            ],
+            ":windows_aarch64": [
                 "-DPIXMAN_API=__declspec(dllexport)",
             ],
             "@platforms//os:macos": [
@@ -89,8 +140,11 @@ cc_library(
             "@platforms//os:linux": [
                 "os/linux/pixman",
             ],
-            "@platforms//os:windows": [
+            ":windows_x86_64": [
                 "os/windows/pixman",
+            ],
+            ":windows_aarch64": [
+                "os/windows_arm64/pixman",
             ],
             "@platforms//os:macos": [
                 "os/darwin/pixman",
@@ -98,6 +152,10 @@ cc_library(
             "//conditions:default": [],
         },
     ),
+    deps = select({
+        ":windows_aarch64": [":pixman_asm_aarch64"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
 )
 
@@ -155,9 +213,13 @@ cc_library(
                 "os/linux/pixman/pixman-config.h",
                 "os/linux/pixman/pixman-version.h",
             ],
-            "@platforms//os:windows": [
+            ":windows_x86_64": [
                 "os/windows/pixman/pixman-config.h",
                 "os/windows/pixman/pixman-version.h",
+            ],
+            ":windows_aarch64": [
+                "os/windows_arm64/pixman/pixman-config.h",
+                "os/windows_arm64/pixman/pixman-version.h",
             ],
             "@platforms//os:macos": [
                 "os/darwin/pixman/pixman-config.h",
@@ -177,8 +239,11 @@ cc_library(
             "@platforms//os:linux": [
                 "os/linux/pixman",
             ],
-            "@platforms//os:windows": [
+            ":windows_x86_64": [
                 "os/windows/pixman",
+            ],
+            ":windows_aarch64": [
+                "os/windows_arm64/pixman",
             ],
             "@platforms//os:macos": [
                 "os/darwin/pixman",
