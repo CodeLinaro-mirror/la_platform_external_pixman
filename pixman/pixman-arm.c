@@ -41,6 +41,14 @@ typedef enum
 /* Needed for EXCEPTION_ILLEGAL_INSTRUCTION */
 #include <windows.h>
 
+#if defined(__aarch64__) || defined(_M_ARM64)
+static arm_cpu_features_t
+detect_cpu_features (void)
+{
+    /* neon is a part of aarch64 */
+    return ARM_NEON;
+}
+#else
 extern int pixman_msvc_try_arm_neon_op ();
 extern int pixman_msvc_try_arm_simd_op ();
 
@@ -69,6 +77,8 @@ detect_cpu_features (void)
 
     return features;
 }
+#endif
+
 
 #elif defined(__APPLE__) && defined(TARGET_OS_IPHONE) /* iOS */
 
