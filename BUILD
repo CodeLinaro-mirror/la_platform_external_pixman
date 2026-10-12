@@ -57,9 +57,11 @@ cc_library(
         "pixman/pixman-arma64-neon-asm-bilinear.S",
     ],
     hdrs = [
+        "os/windows_arm64/pixman/pixman-config.h",
         "pixman/pixman-arm-asm.h",
         "pixman/pixman-arm-common.h",
         "pixman/pixman-arma64-neon-asm.h",
+        "pixman/pixman-private.h",
     ],
     copts = [
         "-DHAVE_CONFIG_H",
