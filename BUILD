@@ -19,6 +19,22 @@ license(
 exports_files(["COPYING"])
 
 config_setting(
+    name = "linux_aarch64",
+    constraint_values = [
+        "@platforms//cpu:aarch64",
+        "@platforms//os:linux",
+    ],
+)
+
+config_setting(
+    name = "linux_x86_64",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ],
+)
+
+config_setting(
     name = "windows_aarch64",
     constraint_values = [
         "@platforms//cpu:aarch64",
@@ -41,9 +57,11 @@ cc_library(
         "pixman/pixman-arma64-neon-asm-bilinear.S",
     ],
     hdrs = [
+        "os/windows_arm64/pixman/pixman-config.h",
         "pixman/pixman-arm-asm.h",
         "pixman/pixman-arm-common.h",
         "pixman/pixman-arma64-neon-asm.h",
+        "pixman/pixman-private.h",
     ],
     copts = [
         "-DHAVE_CONFIG_H",
@@ -65,10 +83,18 @@ cc_library(
         "pixman/pixman-inlines.h",
     ] + select(
         {
-            "@platforms//os:linux": [
+            ":linux_x86_64": [
                 "pixman/pixman-mmx.c",
                 "pixman/pixman-sse2.c",
                 "pixman/pixman-ssse3.c",
+            ],
+            ":linux_aarch64": [
+                "pixman/pixman-arm-asm.h",
+                "pixman/pixman-arm-common.h",
+                "pixman/pixman-arm-neon.c",
+                "pixman/pixman-arma64-neon-asm.S",
+                "pixman/pixman-arma64-neon-asm.h",
+                "pixman/pixman-arma64-neon-asm-bilinear.S",
             ],
             ":windows_x86_64": [
                 "pixman/pixman-mmx.c",
@@ -119,8 +145,11 @@ cc_library(
         "-DHAVE_CONFIG_H",
     ] + select(
         {
-            "@platforms//os:linux": [
+            ":linux_x86_64": [
                 "-mssse3",
+                "-Wno-macro-redefined",
+            ],
+            ":linux_aarch64": [
                 "-Wno-macro-redefined",
             ],
             ":windows_x86_64": [
@@ -152,11 +181,11 @@ cc_library(
             "//conditions:default": [],
         },
     ),
+    visibility = ["//visibility:public"],
     deps = select({
         ":windows_aarch64": [":pixman_asm_aarch64"],
         "//conditions:default": [],
     }),
-    visibility = ["//visibility:public"],
 )
 
 cc_library(

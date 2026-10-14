@@ -5,8 +5,6 @@
 
 #pragma once
 
-#define ASM_HAVE_FUNC_DIRECTIVE 1
-
 #define HAVE_ALARM 1
 
 #define HAVE_BUILTIN_CLZ 1
@@ -53,9 +51,13 @@
 
 #define USE_OPENMP 1
 
+#if defined(__aarch64__)
+#define USE_ARM_A64_NEON 1
+#elif defined(__x86_64__)
 #define USE_SSE2 1
 
 #define USE_SSSE3 1
 
 #define USE_X86_MMX 1
+#endif
 
